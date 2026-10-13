@@ -50,6 +50,14 @@ The output must contain `data/faiss_index/index.faiss` and `data/faiss_index/ind
 
 `.\\venv\\Scripts\\streamlit.exe run main_app.py`
 
+## 5a. Start the FastAPI backend
+
+Install the updated requirements, then run:
+
+`.\\venv\\Scripts\\uvicorn.exe api:app --reload`
+
+Open `http://127.0.0.1:8000/docs` for interactive API documentation. The main endpoints are `POST /ask`, `GET /schemes`, `GET /catalog/summary`, and `GET /health`.
+
 The left pane provides language selection, distribution counts, clickable distributions, department filters, scheme/evidence sliders, and quick actions for pumpsets, machinery, documents, and eligibility.
 
 Clicking a distribution submits a focused question into the normal chat flow. Retrieval, language handling, citations, and conversation history are preserved.
