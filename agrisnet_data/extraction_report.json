@@ -1,0 +1,13 @@
+{
+  "source_url": "https://www.tnagrisnet.tn.gov.in/home/schemes/en",
+  "finished_at": "2026-10-12T14:35:08.211200+00:00",
+  "combinations_checked": 5,
+  "unique_records_saved": 5,
+  "failure_count": 0,
+  "failures": [],
+  "notes": [
+    "Extraction is based on visible browser content.",
+    "Verify completeness against the official portal.",
+    "A saved record does not establish current scheme validity."
+  ]
+}

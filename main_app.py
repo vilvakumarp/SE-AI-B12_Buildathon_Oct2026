@@ -2,6 +2,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from guardrails import valid_input
 from rag_pipeline import answer_question
+from scheme_catalog import summary, filtered_rows, key_factors, load_catalog, subsidy_evidence_rows
 
 load_dotenv()
 st.set_page_config(page_title="Uzhavar Nanban | உழவர் நண்பன்", page_icon="🌾", layout="wide")
@@ -28,6 +29,32 @@ with st.sidebar:
     language = st.selectbox("Language / மொழி", ["English", "தமிழ்", "Tanglish"])
     st.caption("Answers use the locally indexed documents only. No web search is used in chat.")
     st.divider()
+    st.markdown("### Explore scheme verticals")
+    catalog = load_catalog()
+    vertical_counts = summary(catalog)
+    st.markdown("**Indexed records by distribution**")
+    for name, count in vertical_counts.most_common():
+        st.progress(min(count / max(vertical_counts.values()), 1.0), text=f"{name}: {count}")
+    st.markdown("**Ask about a distribution**")
+    distribution_buttons = list(vertical_counts.keys())
+    for start in range(0, len(distribution_buttons), 2):
+        cols = st.columns(2)
+        for offset, col in enumerate(cols):
+            index = start + offset
+            if index >= len(distribution_buttons):
+                break
+            name = distribution_buttons[index]
+            with col:
+                if st.button(name, key=f"ask_distribution_{index}", use_container_width=True):
+                    st.session_state.pending_question = (
+                        f"What agricultural schemes and assistance are available under {name}? "
+                        "Explain the key benefits, documented eligibility, application steps, and required documents."
+                    )
+    vertical = st.selectbox("Area / துறை", ["All areas"] + sorted(vertical_counts), key="catalog_vertical")
+    department = st.selectbox("Department", ["All departments"] + sorted({str(r.get("department")) for r in catalog if r.get("department")}), key="catalog_department")
+    max_cards = st.slider("Schemes to preview", 3, 20, 8, key="catalog_max_cards")
+    detail_level = st.slider("Evidence detail", 1, 3, 2, help="Controls how much indexed text is shown in the catalogue preview.", key="catalog_detail")
+    st.caption("These are discovery filters over the local JSON. Eligibility and benefits must be verified from cited evidence.")
     st.markdown("**Try asking**")
     suggestions = [
         ("Pumpset schemes", "What schemes are available for pumpsets?"),
@@ -41,6 +68,32 @@ with st.sidebar:
 
 st.subheader("How can we help your farm today?")
 st.write("Ask about pumpsets, irrigation, farm machinery, eligibility, subsidies, or application documents.")
+with st.expander("Browse indexed scheme areas", expanded=False):
+    st.write("The raw JSON contains 1,766 records. Many records have department, input type and crop/component information, but the separate eligibility, subsidy and documents fields are currently empty. The assistant therefore treats those details as unverified unless present in the indexed text.")
+    chosen_vertical = None if vertical == "All areas" else vertical
+    chosen_department = None if department == "All departments" else department
+    matching_rows = filtered_rows(chosen_vertical, chosen_department)
+    preview = matching_rows[:max_cards]
+    if chosen_vertical:
+        st.markdown(f"### {vertical}")
+        st.caption(f"{len(matching_rows)} indexed records match this distribution and department.")
+        subsidy_rows = subsidy_evidence_rows(matching_rows)
+        if subsidy_rows:
+            st.markdown("**Top 3 records with explicit subsidy/assistance wording**")
+            st.caption("This is an evidence ranking, not a highest-subsidy claim. Amounts are shown only when present in the local record.")
+            for row in subsidy_rows:
+                st.write(f"• {row.get('scheme') or 'Unnamed scheme'} — {row.get('subsidy') or row.get('input_type') or 'assistance wording found; amount not separately captured'}")
+        else:
+            st.info("No verified subsidy amount is available for this distribution in the raw JSON. Ask a specific scheme question to inspect its indexed evidence.")
+    if not preview:
+        st.info("No records match these filters.")
+    for row in preview:
+        with st.container(border=True):
+            st.markdown(f"**{row.get('scheme') or 'Unnamed scheme'}**")
+            st.caption(f"Verticals: {', '.join(__import__('scheme_catalog').verticals(row))}")
+            for label, value in key_factors(row)[:detail_level + 2]:
+                st.write(f"**{label}:** {value}")
+            st.caption(f"Source: {row.get('source_url') or 'Local extracted record'}")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "pending_question" not in st.session_state:

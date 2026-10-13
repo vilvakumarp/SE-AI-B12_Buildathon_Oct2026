@@ -27,7 +27,7 @@ python build_knowledge_base.py
 
 ## Run the app
 ```powershell
-streamlit run app.py
+streamlit run main_app.py
 ```
 
 ## Notes
