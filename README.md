@@ -38,7 +38,7 @@ Run this only after source data changes or for first setup:
 
 The output must contain `data/faiss_index/index.faiss` and `data/faiss_index/index.pkl`. Do not delete the existing index before confirming a replacement build succeeds.
 
-Use the google drive link to download the data.
+To skip the above process ( re-use previously done to save tokens and time) - Use the google drive link to download the data.
 https://drive.google.com/drive/folders/16dnfsPPP30cnn5VC4Z0GDY1MCc6vUSqp?usp=sharing
 
 keep this folder in the local script folder
