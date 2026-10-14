@@ -38,6 +38,12 @@ Run this only after source data changes or for first setup:
 
 The output must contain `data/faiss_index/index.faiss` and `data/faiss_index/index.pkl`. Do not delete the existing index before confirming a replacement build succeeds.
 
+Use the google drive link to download the data.
+https://drive.google.com/drive/folders/16dnfsPPP30cnn5VC4Z0GDY1MCc6vUSqp?usp=sharing
+
+keep this folder in the local script folder
+check for the readme.txt file as well
+
 ## 4. Validate before Streamlit
 
 `.\\venv\\Scripts\\python.exe -m py_compile main_app.py rag_pipeline.py guardrails.py document_loader.py scheme_catalog.py "2 build_knowledge_base.py"`
